@@ -2,17 +2,18 @@ import bcrypt
 import os
 
 def hash_password(input_password):
- 	 password_bytes = input_password.encode("utf-8")
+	#Converting the password to bytes
+	password_bytes = input_password.encode("utf-8")
+	 
 	# Generate a salt and hash the password
- 	 salt = bcrypt.gensalt()
- 	 hashed_password = bcrypt.hashpw(password_bytes, salt)
+	salt = bcrypt.gensalt()
+	hashed_password = bcrypt.hashpw(password_bytes, salt)
 	# Decode the hash back to a string to store in a text file
-	 return hashed_password
-
+	return hashed_password
 def verify_password(input_password, hashed_password):
 	# Encode both the plaintext password and stored hash to bytes
- 	password_bytes = input_password.encode("utf-8")
- 	hashed_password_bytes = hashed_password.encode("utf-8")
+	password_bytes = input_password.encode("utf-8")
+	hashed_password_bytes = hashed_password.encode("utf-8")
 	# bcrypt.checkpw handles extracting the salt and comparing
 	return bcrypt.checkpw(password_bytes, hashed_password_bytes)
 

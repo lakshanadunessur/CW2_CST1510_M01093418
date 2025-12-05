@@ -1,4 +1,7 @@
 from app.data.db import connect_database
+from pathlib import Path
+
+DATA_DIR = Path(__file__).resolve().parent / "DATA"
 
 def get_user_by_username(username):
     """Retrieve user by username."""
@@ -22,3 +25,4 @@ def insert_user(username, password_hash, role='user'):
     )
     conn.commit()
     conn.close()
+

@@ -1,31 +1,40 @@
-import  sqlite3
+import os
+import pandas as pd
 
-conn = sqlite3.connect("intelligence_platform.db")
-cur = conn.cursor()
+def load_csv_to_table(conn, csv_path, table_name):
+    # 1. Check if file exists
+    if not os.path.exists(csv_path):
+        print(f"CSV file not found: {csv_path}")
+        return 0
 
-#Create table user
-cur.execute("""" CREATE TABLE IF NOT EXISTS users (
-               id INTEGER PRIMARY KEY AUTOINCREMENT,
-                username TEXT NOT NULL UNIQUE,
-                password TEXT NOT NULL,
-               role TEXT DEFAULT 'user')
+    # 2. Load CSV into DataFrame
+    df = pd.read_csv(csv_path)
 
-            """)
-#save changes
-conn.commit()
+    # 3. Insert data into SQL table
+    df.to_sql(name=table_name, con=conn, if_exists='append', index=False)
 
-#Adding data in user table
-cur.execute(""" INSERT INTO users (username, password_hash, role)
-             #VALUES (?, ?, ?)
-             #""", ('alice', 'password_123', 'admin'))
+    # 4. Show result
+    row_count = len(df)
+    print(f"Loaded {row_count} rows into '{table_name}'")
 
-conn.commit()
+    return row_count
 
-#Reading Values from user table
-cur.execute("SELECT username FROM users WHERE role = ?""", ('admin',))
-all_user = cur.fetchall()
-#print(all_users)
+def load_all_csv_data(conn):
+    """
+    Loads every domain CSV required by the platform.
+    Update the paths to match your folder structure.
+    """
+    total_rows = 0
 
-#Updating existing data
-cur.execute(""" UPDATE users SET role = ? WHERE username = ?""", ('admin','bob'))
-cur.execute("SELECT * FROM users")
+    csv_files = {
+        "cyber_incidents": "DATA/cyber_incidents.csv",
+        "datasets_metadata": "DATA/datasets_metadata.csv",
+        "it_tickets": "DATA/it_tickets.csv"
+    }
+
+    for table, path in csv_files.items():
+        print(f" - Loading {path} into {table}")
+        total_rows += load_csv_to_table(conn, path, table)
+
+    print(f"\nTotal CSV rows loaded: {total_rows}")
+    return total_rows

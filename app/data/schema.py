@@ -1,3 +1,6 @@
+import sqlite3
+from pathlib import Path
+
 def create_users_table(conn):
     """Create users table."""
     cursor = conn.cursor()

@@ -19,8 +19,8 @@ def verify_password(input_password, hashed_password):
     return bcrypt.checkpw(password_bytes, hashed_password_bytes)
 
 def register_user(username, password):
-    if os.path.exists("user.txt"):
-        with open ("user.txt","r") as f:
+    if os.path.exists("DATA/user.txt"):
+        with open ("DATA/user.txt", "r") as f:
             for line in f:
                 stored_username = line.strip().split(",")[0]
                 if stored_username == username:
@@ -28,17 +28,17 @@ def register_user(username, password):
                     return False
 
     hashed_password = hash_password(password).decode("utf-8")
-    with open("user.txt","a") as f:
+    with open("DATA/user.txt", "a") as f:
         f.write(f"{username},{hashed_password}\n")
     print(f"User '{username}' registered.")
     return True
 
 def user_exists(username):
     # Check if not exist
-    if not os.path.exists("user.txt"):
+    if not os.path.exists("DATA/user.txt"):
         return False
     # Read file and check each line
-    with open("user.txt","r") as f:
+    with open("DATA/user.txt", "r") as f:
         for line in f:
             stored_username = line.strip().split(",")[0]
             if stored_username == username:
@@ -46,53 +46,50 @@ def user_exists(username):
     return False
 def login_user(username, password):
     # Check if file exist
-    if not os.path.exists("user.txt"):
+    if not os.path.exists("DATA/user.txt"):
         print("Error: Username not found.")
         return False
     #Search for username in the file
-    with open("user.txt","r") as f:
+    with open("DATA/user.txt", "r") as f:
         for line in f:
             stored_username, stored_hash = line.strip().split(",")
             if stored_username == username:
                 #Verify the password
-                if verify_password(password, stored_hash.encode("utf-8")):
+                if verify_password(password, stored_hash):
                     print("Login successful.")
                     return True
                 else:
                     print("Incorrect password.")
                     return False
+
     return False
 def validate_username(username):
     #Checking if username is empty
     if username == "":
-        return False
-        print ("Username cannot be empty.")
+        return False, "Username cannot be empty."
+    if len(username) < 3:
+        return False, "Username must be at least 3 characters long."
+    if len(username) > 10:
+        return False, "Username cannot be longer than 10 characters."
+    for char in username:
+        if not char.isalnum():
+            return False, "Username can only contain letters and numbers."
+    return True, None
 
-    if len(username)<3:
-        return False
-        print("Username must be at least 3 character long")
-
-    if len(username)> 10:
-        return False
-        print("Username cannot be longer than 10 characters")
    #Check characters
     for char in username:
         if not char.isalnum():
+            print("Username can only contain letters and numbers.")
             return False
-        print("Username can only contain letters and numbers.")
 
     return True
 def validate_password(password):
     if password == "":
-        return False
-        print("Password cannot be empty")
-
+        return False, "Password cannot be empty."
     if len(password) < 8:
-        return False
-        print("Password must be least 8 characters long")
-    else:
-        print("Password is invalid.")
-    return True
+        return False, "Password must be at least 8 characters long."
+    return True, None
+
 
 def display_menu():
      """Displays the main menu options."""
@@ -126,26 +123,23 @@ def main():
            if not is_valid:
               print(f"Error: {error_msg}")
               continue
-
-              password_confirm = input("Confirm password: ").strip()
-              if password != password_confirm:
+           password_confirm = input("Confirm password: ").strip()
+           if password != password_confirm:
                   print("Error: Passwords do not match.")
                   continue
-
-                  # Register the user
-                  register_user(username, password)
-              elif choice == '2':
+           register_user(username, password)
+      elif choice == '2':
                   print("\n--- USER LOGIN ---")
                   username = input("Enter your username: ").strip()
                   password = input("Enter your password: ").strip()
                   if login_user(username, password):
                       print("\nYou are now logged in.")
-                      input("\nPress Enter to return to main menu...")      #Ask if user wants to logout
-              elif choice == '3':
+                      input("\nPress Enter to return to main menu...")
+      elif choice == '3':
                   print("\nThank you for using the authentication system.")
                   print("Exiting...")
                   break
-              else:
+      else:
                   print("\nError: Invalid option. Please select 1, 2, or 3.")
-                  if __name__ == "__main__":
-                      main()
+if __name__ == "__main__":
+      main()

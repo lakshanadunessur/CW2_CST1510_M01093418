@@ -10,14 +10,20 @@ def load_csv_to_table(conn, csv_path, table_name):
     # 2. Load CSV into DataFrame
     df = pd.read_csv(csv_path)
 
-    # 3. Insert data into SQL table
+    # 3. Drop columns that are NOT in your database tables
+    # Add more here if needed
+    if "incident_id" in df.columns:
+        df = df.drop(columns=["incident_id"])
+
+    # 4. Insert data into SQL table
     df.to_sql(name=table_name, con=conn, if_exists='append', index=False)
 
-    # 4. Show result
+    # 5. Show result
     row_count = len(df)
     print(f"Loaded {row_count} rows into '{table_name}'")
 
     return row_count
+
 
 def load_all_csv_data(conn):
     """

@@ -2,7 +2,9 @@ import sqlite3
 import bcrypt
 from app.data.db import connect_database
 from app.data.users import get_user_by_username, insert_user
+from pathlib import Path
 
+DATA_DIR = Path(__file__).resolve().parent.parent / "data"
 def register_user(username, password, role='user'):
     """Register new user with password hashing."""
     # Hash password
@@ -29,6 +31,8 @@ def login_user(username, password):
     return False, "Incorrect password."
 
 def migrate_users_from_file(conn, filepath=DATA_DIR / "users.txt"):
+
+
     """
     Migrate users from users.txt to the database.
     """
@@ -74,7 +78,7 @@ cursor = conn.cursor()
 cursor.execute("SELECT id, username, role FROM users")
 users = cursor.fetchall()
 
-print(" Users in database:")
+#print(" Users in database:")
 print(f"{'ID':<5} {'Username':<15} {'Role':<10}")
 print("-" * 35)
 for user in users:

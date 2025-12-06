@@ -1,3 +1,4 @@
+from app.data.db import connect_database
 import pandas as pd
 from app.data.db import connect_database, DB_PATH
 from app.data.schema import create_all_tables

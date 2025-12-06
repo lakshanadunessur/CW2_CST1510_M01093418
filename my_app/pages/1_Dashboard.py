@@ -1,7 +1,18 @@
+import sys, os
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), ".")))
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 import streamlit as st
 import pandas as pd
 import numpy as np
-
+from app.data.db import connect_database
+from app.data.users import get_user_by_username, insert_user
+from app.data.incidents import (
+    get_all_incidents,
+    insert_incident,
+    update_incident_status,
+    delete_incident
+)
+from app.data.datasets import load_all_csv_data
 st.set_page_config(page_title="Dashboard", page_icon="📊", layout="wide")
 
 # Ensure state keys exist (in case user opens this page first)
@@ -20,33 +31,58 @@ if not st.session_state.logged_in:
 # If logged in, show dashboard content
 st.title("📊 Dashboard")
 st.success(f"Hello, **{st.session_state.username}**! You are logged in.")
-
-# Example dashboard layout
-st.caption("This is just demo content – replace with your own dashboard.")
-
-# Sidebar filters
-with st.sidebar:
-    st.header("Filters")
-    n_points = st.slider("Number of data points", 10, 200, 50)
-
-# Fake data
-data = pd.DataFrame(
-    np.random.randn(n_points, 3),
-    columns=["A", "B", "C"]
+# -------------------------------------
+# DOMAIN SELECTOR
+# -------------------------------------
+domain = st.selectbox(
+    "Choose a domain:",
+    ["Cybersecurity", "Data Science", "IT Tickets"]
 )
 
-col1, col2 = st.columns(2)
+st.divider()
+if domain == "Cybersecurity":
+    st.title("Cyber Incidents Dashboard")
 
-with col1:
-    st.subheader("Line chart")
-    st.line_chart(data)
+    conn = connect_database('DATA/intelligence_platform.db')
 
-with col2:
-    st.subheader("Bar chart")
-    st.bar_chart(data)
+    incidents = get_all_incidents(conn)
+    st.dataframe(incidents, use_container_width=True)
 
-with st.expander("See raw data"):
-    st.dataframe(data)
+    with st.form("new_incident"):
+        title = st.text_input("Incident Title")
+        severity = st.selectbox("Severity", ["Low", "Medium", "High", "Critical"])
+        status = st.selectbox("Status", ["Open", "In Progress", "Resolved"])
+        submitted = st.form_submit_button("Add Incident")
+
+    if submitted and title:
+        insert_incident(conn, title, severity, status)
+        st.success("Incident added successfully!")
+        st.rerun()
+
+# --------------------------------------
+# DATA SCIENCE DASHBOARD
+# --------------------------------------
+if domain == "Data Science":
+    st.title("📈 Data Science Dashboard")
+
+    # Simple example chart
+    import pandas as pd
+
+    history = pd.DataFrame({
+        "epoch": [1, 2, 3, 4, 5],
+        "accuracy": [0.70, 0.75, 0.82, 0.88, 0.91],
+        "loss": [0.45, 0.33, 0.28, 0.22, 0.19]
+    })
+
+    st.subheader("Model Performance")
+    st.line_chart(history, x="epoch", y=["accuracy", "loss"])
+# --------------------------------------
+# IT TICKETS DASHBOARD
+# --------------------------------------
+if domain == "IT Tickets":
+    st.title("💼 IT Tickets Dashboard")
+
+    st.info("IT Ticket dashboard coming soon!")
 
 # Logout button
 st.divider()

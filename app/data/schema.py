@@ -16,42 +16,37 @@ def create_users_table(conn):
     """)
     conn.commit()
 def create_cyber_incidents_table(conn):
-  cursor = conn.cursor()
-  create_table_sql = """
-  CREATE TABLE IF NOT EXISTS cyber_incidents (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    date TEXT NOT NULL,
-    incident_type TEXT NOT NULL,
-    severity TEXT NOT NULL,
-    status TEXT NOT NULL,
-    description TEXT NOT NULL,
-    reported_by TEXT,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-    )
+    cursor = conn.cursor()
+    create_table_sql = """
+    CREATE TABLE IF NOT EXISTS cyber_incidents (
+        incident_id INTEGER PRIMARY KEY AUTOINCREMENT,
+        timestamp TEXT NOT NULL,
+        severity TEXT NOT NULL,
+        category TEXT NOT NULL,
+        status TEXT NOT NULL,
+        description TEXT NOT NULL
+    );
     """
-  cursor.execute(create_table_sql)
-  conn.commit()
-  print("Cyber incidents table created successfully!")
-  pass
+    cursor.execute(create_table_sql)
+    conn.commit()
+    print("Cyber incidents table created successfully!")
+
 
 def create_datasets_metadata_table(conn):
     cursor = conn.cursor()
     create_table_sql = """
     CREATE TABLE IF NOT EXISTS datasets_metadata (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
-      dataset_name TEXT NOT NULL,
-      category TEXT NOT NULL,
-      source TEXT NOT NULL,
-      last_updated TEXT NOT NULL,
-      record_count INTEGER NOT NULL,
-      file_size_mb REAL NOT NULL,
-      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-      )
-      """
+        dataset_id INTEGER PRIMARY KEY,
+        name TEXT NOT NULL,
+        rows INTEGER NOT NULL,
+        columns INTEGER NOT NULL,
+        uploaded_by TEXT,
+        upload_date TEXT
+    );
+    """
     cursor.execute(create_table_sql)
     conn.commit()
     print("Datasets metadata table created successfully!")
-    pass
 
 def create_it_tickets_table(conn):
       cursor = conn.cursor()
@@ -63,8 +58,8 @@ def create_it_tickets_table(conn):
         status TEXT NOT NULL,
         category TEXT NOT NULL,
         subject TEXT NOT NULL,
-        description TEXT
-        created_date TEXT
+        description TEXT,
+        created_date TEXT,
         resolved_date TEXT,
         assigned_to TEXT,
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
@@ -73,7 +68,7 @@ def create_it_tickets_table(conn):
       cursor.execute(create_table_sql)
       conn.commit()
       print("IT tickets table created successfully!")
-      pass
+
 
 def create_all_tables(conn):
     """Create all tables."""
@@ -92,10 +87,18 @@ def load_csv_to_table(conn, csv_path, table_name):
     df = pd.read_csv(csv_path)
 
     # 3. Insert data into SQL table
-    df.to_sql(name=table_name, con=conn, if_exists='append', index=False)
+    # Columns that your DB does NOT support
+    schema_cols = [col[1] for col in conn.execute(f"PRAGMA table_info({table_name})")]
+    drop_cols = [col for col in df.columns if col not in schema_cols]
 
-    # 4. Show result
-    row_count = len(df)
+    for col in drop_cols:
+        print(f"Dropping column not in DB schema: {col}")
+        df = df.drop(columns=[col])
+
+    df.to_sql(table_name, conn, if_exists='append', index=False)
+    print(f"Loaded {len(df)} rows into {table_name}")
+
+    return len(df)
     print(f"Loaded {row_count} rows into '{table_name}'")
 
     return row_count

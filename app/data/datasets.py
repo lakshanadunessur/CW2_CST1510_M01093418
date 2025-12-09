@@ -1,46 +1,54 @@
-import os
 import pandas as pd
-
-def load_csv_to_table(conn, csv_path, table_name):
-    # 1. Check if file exists
-    if not os.path.exists(csv_path):
-        print(f"CSV file not found: {csv_path}")
-        return 0
-
-    # 2. Load CSV into DataFrame
-    df = pd.read_csv(csv_path)
-
-    # 3. Drop columns that are NOT in your database tables
-    # Add more here if needed
-    if "incident_id" in df.columns:
-        df = df.drop(columns=["incident_id"])
-
-    # 4. Insert data into SQL table
-    df.to_sql(name=table_name, con=conn, if_exists='append', index=False)
-
-    # 5. Show result
-    row_count = len(df)
-    print(f"Loaded {row_count} rows into '{table_name}'")
-
-    return row_count
+from app.data.db import connect_database
+from app.data.db import initialize_tables
 
 
-def load_all_csv_data(conn):
-    """
-    Loads every domain CSV required by the platform.
-    Update the paths to match your folder structure.
-    """
-    total_rows = 0
+def insert_datasets(name, rows, columns, uploaded_by, upload_date):
 
-    csv_files = {
-        "cyber_incidents": "DATA/cyber_incidents.csv",
-        "datasets_metadata": "DATA/datasets_metadata.csv",
-        "it_tickets": "DATA/it_tickets.csv"
-    }
+    """Insert new incident."""
+    conn = connect_database()
+    cursor = conn.cursor()
 
-    for table, path in csv_files.items():
-        print(f" - Loading {path} into {table}")
-        total_rows += load_csv_to_table(conn, path, table)
+    cursor.execute("""
+        INSERT INTO datasets_metadata (name, rows, columns, uploaded_by, upload_date) 
+        VALUES (?, ?, ?, ?, ?, ?)
+    """,(name,rows,columns,uploaded_by,upload_date))
+    conn.commit()
+    dataset_id = cursor.lastrowid
+    conn.close()
+    return dataset_id
 
-    print(f"\nTotal CSV rows loaded: {total_rows}")
-    return total_rows
+def get_all_datasets(conn):
+    conn= connect_database()
+    df = pd.read_sql_query(
+        "SELECT * FROM datasets_metadata ORDER BY dataset_id",
+        conn
+    )
+    conn.close()
+    return df
+
+def update_dataset_name(conn , dataset_id, new_name):
+    cursor = conn.cursor()
+    cursor.execute("""
+        UPDATE datasets_metadata 
+        SET name = ?
+        WHERE dataset_id = ?
+    """,(new_name,dataset_id))
+    conn.commit()
+    rows = cursor.rowcount
+    conn.close()
+    return rows
+
+
+def delete_dataset(dataset_id):
+  conn = connect_database()
+  cursor = conn.cursor()
+
+  cursor.execute("DELETE FROM datasets_metadata WHERE dataset_id = ?",(dataset_id,))
+  conn.commit()
+  rows = cursor.rowcount
+  conn.close()
+  return rows
+
+if __name__ == "__main__":
+ conn = connect_database()

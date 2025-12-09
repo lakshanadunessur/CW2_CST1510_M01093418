@@ -1,11 +1,16 @@
 from app.data.db import connect_database
-import pandas as pd
-from app.data.db import connect_database, DB_PATH
 from app.data.schema import create_all_tables
 from app.services.user_service import register_user, login_user, migrate_users_from_file
-from app.data.incidents import insert_incident, get_all_incidents,update_incident_status, delete_incident
-from app.data.incidents import get_incidents_by_type_count,get_high_severity_by_status
-from app.data.datasets import load_all_csv_data
+from app.data.incidents import insert_incident, get_all_incidents
+from app.data.schema import create_cyber_incidents_table, create_datasets_metadata_table, create_it_tickets_table
+from app.data.schema import load_all_csv_data, create_all_tables
+from app.data.incidents import update_incident_status
+from app.data.incidents import delete_incident
+from app.data.incidents import get_incidents_by_type_count
+from app.data.incidents import get_high_severity_by_status
+import pandas as pd
+from app.data.db import DB_PATH
+from app.data.db import connect_database
 
 def main():
     print("=" * 60)
@@ -18,13 +23,16 @@ def main():
     conn.close()
 
     # 2. Migrate users
-    migrate_users_from_file()
+    conn = connect_database()
+    migrate_users_from_file(conn)
+    conn.close()
+
 
     # 3. Test authentication
-    success, msg = register_user("alice", "SecurePass123!", "analyst")
+    success, msg = register_user("Isha", "SecurePass123!", "analyst")
     print(msg)
 
-    success, msg = login_user("alice", "SecurePass123!")
+    success, msg = login_user("Isha", "SecurePass123!")
     print(msg)
 
     # 4. Test CRUD
@@ -33,8 +41,7 @@ def main():
         "Phishing",
         "High",
         "Open",
-        "Suspicious email detected",
-        "alice"
+        "Suspicious email detected"
     )
     print(f"Created incident #{incident_id}")
 

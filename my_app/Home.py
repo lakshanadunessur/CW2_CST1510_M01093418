@@ -7,6 +7,7 @@ import os
 
 USER_FILE = "DATA/user.txt"
 
+#Create function to load users in user.txt
 def load_users():
     users = {}
     if os.path.exists(USER_FILE):
@@ -16,6 +17,7 @@ def load_users():
                 users[username] = hashed_pw
     return users
 
+#Function to verify password
 def verify_password(input_password, stored_hash):
     return bcrypt.checkpw(input_password.encode("utf-8"), stored_hash.encode("utf-8"))
 
@@ -64,3 +66,6 @@ if st.button("Login"):
             st.error("Incorrect password.")
     else:
         st.error("User does not exist.")
+#Register button
+if st.button("Go to Registration"):
+    st.switch_page("pages/Register.py")

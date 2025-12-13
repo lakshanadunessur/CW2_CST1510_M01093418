@@ -51,6 +51,7 @@ domain = st.selectbox(
 )
 
 st.divider()
+#Cybersecurity domain
 if domain == "Cybersecurity":
 
         st.header("🛡 Cybersecurity Analytics")
@@ -137,101 +138,109 @@ if domain == "Cybersecurity":
             insert_incident(conn, title, severity, status)
             st.success("Incident added successfully!")
             st.rerun()
-
+st.divider()
+# ---------------------------------------------------
 # DATA SCIENCE DASHBOARD
+# ---------------------------------------------------
 
 if domain == "Data Science":
 
-    st.header("Data Science Analytics")
+    st.header("📊 Data Science Analytics")
 
     datasets = get_all_datasets(conn)
 
     if datasets.empty:
         st.warning("No datasets data found.")
-        st.stop()
+    else:
+        # ---------------- METRICS ROW ----------------
+        col1, col2, col3 = st.columns(3)
 
-    # ---------------- METRIC ----------------
-    st.metric("Total Datasets", len(datasets))
+        with col1:
+            st.metric("Total Datasets", len(datasets))
 
-    st.title("Data Science Dashboard")
-    st.dataframe(datasets, use_container_width=True)
+        with col2:
+            avg_rows = int(datasets["rows"].mean())
+            st.metric("Average Rows", avg_rows)
 
-    st.subheader("Overview Charts")
-    colA, colB = st.columns(2)
+        with col3:
+            avg_cols = int(datasets["columns"].mean())
+            st.metric("Average Columns", avg_cols)
 
-    # ---------------- DATASETS BY ROW SIZE ----------------
-    with colA:
-        st.markdown("### Datasets by Number of Rows")
+        st.divider()
 
-        row_bins = [0, 1000, 10000, 100000, float("inf")]
-        row_labels = ["Small", "Medium", "Large", "Very Large"]
+        # ---------------- DATA TABLE ----------------
+        st.title("Data Science Dashboard")
+        st.dataframe(datasets, use_container_width=True)
 
-        datasets["row_size"] = pd.cut(
-            datasets["rows"],
-            bins=row_bins,
-            labels=row_labels
+        # ---------------- OVERVIEW CHARTS ----------------
+        st.subheader(" Overview Charts")
+
+        colA, colB = st.columns(2)
+
+        # -------- DATASETS BY ROW SIZE --------
+        with colA:
+            st.markdown("### Datasets by Number of Rows")
+
+            row_bins = [0, 1000, 10000, 100000, float("inf")]
+            row_labels = ["Small", "Medium", "Large", "Very Large"]
+
+            datasets["row_size"] = pd.cut(
+                datasets["rows"],
+                bins=row_bins,
+                labels=row_labels
+            )
+
+            row_counts = datasets.groupby("row_size").size().reset_index(name="count")
+            st.bar_chart(row_counts, x="row_size", y="count", use_container_width=True)
+
+        # -------- DATASETS BY COLUMN SIZE --------
+        with colB:
+            st.markdown("### Datasets by Number of Columns")
+
+            col_bins = [0, 5, 10, 20, float("inf")]
+            col_labels = ["Few", "Moderate", "Many", "Very Many"]
+
+            datasets["column_size"] = pd.cut(
+                datasets["columns"],
+                bins=col_bins,
+                labels=col_labels
+            )
+
+            col_counts = datasets.groupby("column_size").size().reset_index(name="count")
+            st.bar_chart(col_counts, x="column_size", y="count", use_container_width=True)
+
+        st.divider()
+
+        # ---------------- PLOTLY PIE CHART ----------------
+        st.subheader(" Dataset Size Distribution (Pie Chart)")
+
+        import plotly.express as px
+
+        size_counts = datasets.groupby("row_size").size().reset_index(name="count")
+
+        fig_pie = px.pie(
+            size_counts,
+            names="row_size",
+            values="count",
+            title="Datasets by Size (Number of Rows)"
         )
 
-        row_counts = datasets.groupby("row_size").size().reset_index(name="count")
-        st.bar_chart(row_counts, x="row_size", y="count", use_container_width=True)
+        st.plotly_chart(fig_pie, use_container_width=True)
 
-    # ---------------- DATASETS BY COLUMN SIZE ----------------
-    with colB:
-        st.markdown("### Datasets by Number of Columns")
+        st.divider()
 
-        col_bins = [0, 5, 10, 20, float("inf")]
-        col_labels = ["Few", "Moderate", "Many", "Very Many"]
+        # ---------------- FORM SECTION ----------------
+        with st.form("new_dataset"):
+            name = st.text_input("Dataset Name")
+            rows = st.number_input("Number of Rows", min_value=1, step=1)
+            columns = st.number_input("Number of Columns", min_value=1, step=1)
+            submitted = st.form_submit_button("Add Dataset")
 
-        datasets["column_size"] = pd.cut(
-            datasets["columns"],
-            bins=col_bins,
-            labels=col_labels
-        )
+        if submitted and name:
+            insert_datasets(conn, name, rows, columns)
+            st.success("Dataset added successfully!")
+            st.rerun()
 
-        col_counts = datasets.groupby("column_size").size().reset_index(name="count")
-        st.bar_chart(col_counts, x="column_size", y="count", use_container_width=True)
-
-    st.divider()
-    # --------------------- DATA SCIENCE PIE CHART ---------------------
-st.subheader("Dataset Size Distribution (Pie Chart)")
-
-if not datasets.empty:
-    import plotly.express as px
-
-    # Create row size groups
-    row_bins = [0, 1000, 10000, 100000, float("inf")]
-    row_labels = ["Small", "Medium", "Large", "Very Large"]
-
-    datasets["row_size"] = pd.cut(
-        datasets["rows"],
-        bins=row_bins,
-        labels=row_labels
-    )
-
-    size_counts = datasets.groupby("row_size").size().reset_index(name="count")
-
-    fig_pie = px.pie(
-        size_counts,
-        names="row_size",
-        values="count",
-        title="Datasets by Size (Number of Rows)"
-    )
-    st.plotly_chart(fig_pie, use_container_width=True)
-else:
-    st.info("No data to generate pie chart.")
-
-st.divider()
-# --------------------- FORM SECTION ---------------------
-with st.form("new_dataset"):
-    name = st.text_input("Dataset Name")
-    rows = st.number_input("Number of Rows", min_value=1, step=1)
-    columns = st.number_input("Number of Columns", min_value=1, step=1)
-    submitted = st.form_submit_button("Add Dataset")
-
-if submitted and name:
-    insert_datasets(conn, name, rows, columns)
-    st.success("Dataset added successfully!")
-    st.rerun()
 
 
 # --------------------------------------

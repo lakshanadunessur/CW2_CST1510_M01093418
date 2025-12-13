@@ -3,6 +3,7 @@ from pathlib import Path
 import os
 import pandas as pd
 
+
 def create_users_table(conn):
     """Create users table."""
     cursor = conn.cursor()
@@ -15,6 +16,8 @@ def create_users_table(conn):
         )
     """)
     conn.commit()
+
+#Creating cyber incidents table
 def create_cyber_incidents_table(conn):
     cursor = conn.cursor()
     create_table_sql = """
@@ -31,7 +34,7 @@ def create_cyber_incidents_table(conn):
     conn.commit()
     print("Cyber incidents table created successfully!")
 
-
+#Creating datasets metadata table
 def create_datasets_metadata_table(conn):
     cursor = conn.cursor()
     create_table_sql = """
@@ -48,28 +51,29 @@ def create_datasets_metadata_table(conn):
     conn.commit()
     print("Datasets metadata table created successfully!")
 
+#Creating IT tickets table
 def create_it_tickets_table(conn):
-      cursor = conn.cursor()
-      create_table_sql = """
-      CREATE TABLE IF NOT EXISTS it_tickets (
+    cursor = conn.cursor()
+
+    create_table_sql = """
+    CREATE TABLE IF NOT EXISTS it_tickets (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         ticket_id TEXT NOT NULL UNIQUE,
         priority TEXT NOT NULL,
         status TEXT NOT NULL,
-        category TEXT NOT NULL,
-        subject TEXT NOT NULL,
         description TEXT,
-        created_date TEXT,
-        resolved_date TEXT,
         assigned_to TEXT,
+        resolution_time_hours TEXT,
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-        )
-        """
-      cursor.execute(create_table_sql)
-      conn.commit()
-      print("IT tickets table created successfully!")
+    );
+    """
+
+    cursor.execute(create_table_sql)
+    conn.commit()
+    print("IT tickets table created successfully!")
 
 
+#Creating all tables
 def create_all_tables(conn):
     """Create all tables."""
     create_users_table(conn)
@@ -77,6 +81,7 @@ def create_all_tables(conn):
     create_datasets_metadata_table(conn)
     create_it_tickets_table(conn)
 
+#Loading csv to table
 def load_csv_to_table(conn, csv_path, table_name):
     # 1. Check if file exists
     if not os.path.exists(csv_path):

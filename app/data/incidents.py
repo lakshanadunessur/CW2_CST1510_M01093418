@@ -3,7 +3,7 @@ from app.data.db import connect_database
 from app.data.db import initialize_tables
 
 #CRUD functions
-# INSERT
+# INSERT incident
 def insert_incident(timestamp, severity, category, status, description):
     conn = connect_database()
     cursor = conn.cursor()
@@ -46,7 +46,7 @@ def update_incident_status(conn,incident_id, new_status):
     return rows
 
 
-# DELETE
+# DELETE incident
 def delete_incident(incident_id):
     conn = connect_database()
     cursor = conn.cursor()
@@ -57,6 +57,7 @@ def delete_incident(incident_id):
     conn.close()
     return rows
 
+#Function to get incident by type count
 def get_incidents_by_type_count(conn):
     """
     Count incidents by type.
@@ -71,6 +72,7 @@ def get_incidents_by_type_count(conn):
     df = pd.read_sql_query(query, conn)
     return df
 
+#Function to get high severity by status
 def get_high_severity_by_status(conn):
     """
     Count high severity incidents by status.
@@ -86,6 +88,7 @@ def get_high_severity_by_status(conn):
     df = pd.read_sql_query(query, conn)
     return df
 
+#Function to get incident types with many cases
 def get_incident_types_with_many_cases(conn, min_count=5):
     """
     Find categories with more than min_count cases.

@@ -92,7 +92,7 @@ def load_csv_to_table(conn, csv_path, table_name):
     df = pd.read_csv(csv_path)
 
     # 3. Insert data into SQL table
-    # Columns that your DB does NOT support
+    # Columns that DB does NOT support
     schema_cols = [col[1] for col in conn.execute(f"PRAGMA table_info({table_name})")]
     drop_cols = [col for col in df.columns if col not in schema_cols]
 
@@ -108,6 +108,7 @@ def load_csv_to_table(conn, csv_path, table_name):
 
     return row_count
 
+#Function to load all csv data
 def load_all_csv_data(conn):
     """
     Loads every domain CSV required by the platform.

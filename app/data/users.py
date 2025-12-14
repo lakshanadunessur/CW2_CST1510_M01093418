@@ -5,6 +5,7 @@ from pathlib import Path
 
 DATA_DIR = Path(__file__).resolve().parent / "DATA"
 
+#Function to get user by username
 def get_user_by_username(username):
     """Retrieve user by username."""
     conn = connect_database()
@@ -14,6 +15,7 @@ def get_user_by_username(username):
     conn.close()
     return user
 
+#Function to insert user
 def insert_user(username, password_hash, role='user'):
     """Insert new user."""
     conn = connect_database()

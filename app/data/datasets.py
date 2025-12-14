@@ -2,7 +2,7 @@ import pandas as pd
 from app.data.db import connect_database
 from app.data.db import initialize_tables
 
-
+#Insert datasets
 def insert_datasets(name, rows, columns, uploaded_by, upload_date):
 
     """Insert new incident."""
@@ -18,6 +18,7 @@ def insert_datasets(name, rows, columns, uploaded_by, upload_date):
     conn.close()
     return dataset_id
 
+#Get all datasets
 def get_all_datasets(conn):
     conn= connect_database()
     df = pd.read_sql_query(
@@ -27,6 +28,7 @@ def get_all_datasets(conn):
     conn.close()
     return df
 
+#Update dataset name
 def update_dataset_name(conn , dataset_id, new_name):
     cursor = conn.cursor()
     cursor.execute("""
@@ -39,7 +41,7 @@ def update_dataset_name(conn , dataset_id, new_name):
     conn.close()
     return rows
 
-
+#Delete dataset
 def delete_dataset(dataset_id):
   conn = connect_database()
   cursor = conn.cursor()

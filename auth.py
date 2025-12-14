@@ -33,6 +33,7 @@ def register_user(username, password):
     print(f"User '{username}' registered.")
     return True
 
+#Function to check if user exists
 def user_exists(username):
     # Check if not exist
     if not os.path.exists("DATA/user.txt"):
@@ -63,6 +64,7 @@ def login_user(username, password):
                     return False
 
     return False
+#Function to validate username
 def validate_username(username):
     #Checking if username is empty
     if username == "":
@@ -76,13 +78,14 @@ def validate_username(username):
             return False, "Username can only contain letters and numbers."
     return True, None
 
-   #Check characters
+   #Check if characters
     for char in username:
         if not char.isalnum():
             print("Username can only contain letters and numbers.")
             return False
 
     return True
+#Function to validate password
 def validate_password(password):
     if password == "":
         return False, "Password cannot be empty."
@@ -108,6 +111,7 @@ def main():
    while True:
       display_menu()
       choice = input("\nPlease select an option (1-3): ").strip()
+      #Select choices
       if choice == '1':                   #Registration flow
            print("\n--- USER REGISTRATION ---")
            username = input("Enter a username: ").strip()

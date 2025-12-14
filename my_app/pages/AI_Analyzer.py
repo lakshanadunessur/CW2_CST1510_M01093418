@@ -4,10 +4,8 @@ from google.genai import types
 from app.data.incidents import get_all_incidents
 
 
-
 client = genai.Client(api_key=st.secrets["GEMINI_API_KEY"])
 st.subheader("AI Incident Analyzer")
-
 
 incidents = get_all_incidents(None)
 

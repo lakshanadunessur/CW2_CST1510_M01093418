@@ -129,13 +129,14 @@ if domain == "Cybersecurity":
 
         # --------------------- FORM SECTION ---------------------
         with st.form("new_incident"):
-            title = st.text_input("Incident Title")
+            date =st.date_input("Enter a date")
+            incident_type = st.selectbox("Incident Type", ["Malware","Phising","DDos"])
             severity = st.selectbox("Severity", ["Low", "Medium", "High", "Critical"])
-            status = st.selectbox("Status", ["Open", "In Progress", "Resolved"])
-            submitted = st.form_submit_button("Add Incident")
-
-        if submitted and title:
-            insert_incident(conn, title, severity, status)
+            status = st.selectbox("Status", ["Open","Closed", "In Progress", "Resolved"])
+            description = st.text_input("Description")
+            submitted = st.form_submit_button("Submit")
+            if submitted:
+                insert_incident(date, incident_type, severity, status, description)
             st.success("Incident added successfully!")
             st.rerun()
 st.divider()

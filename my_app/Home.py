@@ -66,6 +66,7 @@ if st.button("Login"):
             st.error("Incorrect password.")
     else:
         st.error("User does not exist.")
+
 #Register button
 if st.button("Go to Registration"):
     st.switch_page("pages/Register.py")
